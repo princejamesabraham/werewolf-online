@@ -742,8 +742,9 @@ html[data-bg=gojo] #bgG{opacity:1;transform:none;filter:none;clip-path:circle(90
 }
 @media (max-aspect-ratio:4/5) and (prefers-reduced-motion:reduce){#bgG{animation:none}}
 /* ===== Multi-HP ===== */
-#mpcover{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;text-align:center;padding:24px;background:linear-gradient(160deg,var(--g1),var(--g2));border:1px solid var(--line)}
+#mpcover{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;text-align:center;padding:24px;background:var(--solid);border:1px solid var(--line)}
 #mpcover[hidden]{display:none}
+.boxw:has(#mpcover:not([hidden])) #scr{visibility:hidden}
 .mpw-ic{font-size:3rem;line-height:1}
 .mpwait{text-align:center;padding:26px 8px}
 .mpbox{border:1px solid var(--line);padding:14px 14px 12px;margin:0 0 18px;background:rgba(255,255,255,.04)}
@@ -4206,7 +4207,7 @@ function mpView(s){
   if(!G||!MP.live)return{k:'lobby',me:s.i,players:MP.slots.map(x=>({n:x.name,ok:mpOkNow(x),h:!!x.host}))};
   const b=document.body,base={k:'view',me:s.i,cls:b.className.replace(/\bpriv\b/g,'').replace(/\s+/g,' ').trim(),
     theme:document.documentElement.dataset.theme||'darah',lite:document.documentElement.dataset.lite||'off',
-    ph:$('#ph').textContent,bc:$('#board').className,bh:mpStrip($('#board').innerHTML)};
+    bg:document.documentElement.dataset.bg||'',ph:$('#ph').textContent,bc:$('#board').className,bh:mpStrip($('#board').innerHTML)};
   if(MP.custom){const c=MP.custom(s);if(c)return{...base,sc:'box',sh:mpStrip(c.html),mode:c.mode}}
   if(MP.pc)return{...base,sc:'box',sh:`<div class="mpwait"><div class="mpw-ic">${esc(MP.pc.ic)}</div><h2>${esc(MP.pc.t)}</h2><p class="mute">${esc(MP.pc.sub||'')}</p></div>`,mode:'ro'};
   const own=mpOwner();
@@ -4229,8 +4230,10 @@ function mpSync(force){
   if(later)setTimeout(mpSyncSoon,later+20);
 }
 function mpSyncSoon(){if(MP.t)return;MP.t=setTimeout(()=>{MP.t=0;try{mpSync()}catch(e){console.error(e)}},80)}
-new MutationObserver(mpSyncSoon).observe(document.querySelector('main'),{subtree:true,childList:true,attributes:true,characterData:true});
-new MutationObserver(mpSyncSoon).observe(document.body,{attributes:true,attributeFilter:['class']});
+const mpObs=()=>{if(MP.on){try{mpCover()}catch(e){}}mpSyncSoon()};
+new MutationObserver(mpObs).observe(document.querySelector('main'),{subtree:true,childList:true,attributes:true,characterData:true});
+new MutationObserver(mpObs).observe(document.body,{attributes:true,attributeFilter:['class']});
+new MutationObserver(mpSyncSoon).observe(document.documentElement,{attributes:true,attributeFilter:['data-bg']});
 
 /* ---------- penutup layar rahasia di HP tuan rumah ---------- */
 function mpCover(){
@@ -4240,12 +4243,12 @@ function mpCover(){
       if(confirm('Layar rahasia pemain ini akan terlihat di HP tuan rumah. Lanjutkan?')){MP.tk=mpOwner();mpCover();mpSync(true)}}}
   const own=mpOwner(),show=MP.on&&own!=null&&mpRemote(MP.slots[own])&&MP.tk!==own&&!MP.custom;
   if(MP.tk!=null&&MP.tk!==own)MP.tk=null;
-  c.hidden=!show;
+  if(c.hidden===show)c.hidden=!show;
   if(show){
     const s=MP.slots[own],ok=mpOkNow(s);
     const html=`<div class="mpw-ic">${ok?'🔒':'📡'}</div><h3>${ok?'Menunggu '+esc(s.name):esc(s.name)+' terputus'}</h3><p class="mute">${ok?'Layar rahasia tampil di HP '+esc(s.name)+'.':'Menunggu HP-nya tersambung kembali.'}</p>${ok?'':'<button class="ghost" data-tk="1">Ambil alih layar (pemain ini akan terlihat)</button>'}`;
     if(c.__h!==html){c.__h=html;c.innerHTML=html}
-    clearTimeout(PT);const v=$('#veil');if(v)v.classList.remove('on');
+    clearTimeout(PT);const v=$('#veil');if(v&&v.classList.contains('on'))v.classList.remove('on');
   }
 }
 
