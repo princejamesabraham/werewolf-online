@@ -650,7 +650,6 @@ header{position:relative}
 header::before{content:"";position:absolute;inset:-6px -10px;z-index:-1;border-radius:16px;border:1px solid var(--line);background:rgba(8,10,28,.5);opacity:0;pointer-events:none;transition:opacity 1.6s,background .8s}
 body.day header::before{background:rgba(239,232,214,.88)}
 html[data-bg=gojo] header::before{opacity:1}
-html[data-lite=on] #bgG{display:none!important}
 /* ===== v9: tema tampilan Gojo + peringatan dramatis ===== */
 html[data-bg=gojo] body,html[data-bg=gojo] body.day{--ink:#eaf6ff;--mute:#9db8d8;--line:rgba(110,205,255,.32);--accent:#5ad1ff;--accent2:#a679ff;--solid:#060a18;--g1:rgba(6,12,30,.66);--g2:rgba(10,16,40,.5);--shadow:rgba(0,150,255,.28)}
 html[data-bg=gojo] body.night .box,html[data-bg=gojo] body.day .box{box-shadow:inset 0 0 0 1px var(--line),inset 0 0 44px rgba(70,150,255,.1),0 0 30px rgba(60,170,255,.18)}
@@ -823,12 +822,12 @@ function kids(a,b){
 function setHTML(el,html){kids(el,parse(html))}
 /* background video Gojo: dimuat dari gojo.mp4 (satu folder dengan join.html), status dikirim tuan rumah */
 const BGG=document.getElementById('bgG');let gojoSrc=false,gojoNow='';
-function gojoPrep(lite){if(gojoSrc||!BGG||lite==='on')return;gojoSrc=true;try{BGG.preload='auto';BGG.src='gojo.mp4';BGG.load()}catch(e){}}
+function gojoPrep(){if(gojoSrc||!BGG)return;gojoSrc=true;try{BGG.preload='auto';BGG.src='gojo.mp4';BGG.load()}catch(e){}}
 function applyBg(b,lite){
   const h=document.documentElement;
-  gojoPrep(lite);
+  gojoPrep();
   if(b===gojoNow)return;gojoNow=b;
-  if(b==='gojo'){h.dataset.bg='gojo';if(BGG&&lite!=='on'){try{BGG.currentTime=0}catch(e){}const p=BGG.play();if(p&&p.catch)p.catch(()=>{})}}
+  if(b==='gojo'){h.dataset.bg='gojo';if(BGG){try{BGG.currentTime=0}catch(e){}const p=BGG.play();if(p&&p.catch)p.catch(()=>{})}}
   else{h.dataset.bg='';if(BGG)setTimeout(()=>{if(gojoNow!=='gojo'){try{BGG.pause()}catch(e){}}},2200)}
 }
 function setMsg(html,cls){scr.className='box';scr.dataset.mode='ro';setHTML(scr,html);foot.hidden=true}

@@ -650,7 +650,6 @@ header{position:relative}
 header::before{content:"";position:absolute;inset:-6px -10px;z-index:-1;border-radius:16px;border:1px solid var(--line);background:rgba(8,10,28,.5);opacity:0;pointer-events:none;transition:opacity 1.6s,background .8s}
 body.day header::before{background:rgba(239,232,214,.88)}
 html[data-bg=gojo] header::before{opacity:1}
-html[data-lite=on] #bgG{display:none!important}
 /* ===== v9: tema tampilan Gojo + peringatan dramatis ===== */
 html[data-bg=gojo] body,html[data-bg=gojo] body.day{--ink:#eaf6ff;--mute:#9db8d8;--line:rgba(110,205,255,.32);--accent:#5ad1ff;--accent2:#a679ff;--solid:#060a18;--g1:rgba(6,12,30,.66);--g2:rgba(10,16,40,.5);--shadow:rgba(0,150,255,.28)}
 html[data-bg=gojo] body.night .box,html[data-bg=gojo] body.day .box{box-shadow:inset 0 0 0 1px var(--line),inset 0 0 44px rgba(70,150,255,.1),0 0 30px rgba(60,170,255,.18)}
@@ -866,7 +865,7 @@ function setup(q){
   <h3 class="sp">Tampilan</h3>
   <div class="thm">${[['darah','Darah'],['salju','Salju'],['sakura','Sakura']].map(([k,n])=>`<button class="thc${(S.theme||'darah')===k?' on':''}" data-th="${k}" aria-pressed="${(S.theme||'darah')===k}"><i class="sw sw-${k}"></i>${n}</button>`).join('')}</div>
   <label class="tg"><input type="checkbox" id="tb" ${S.table!==false?'checked':''}> Papan meja bundar (matikan untuk kartu potret)</label>
-  <label class="tg"><input type="checkbox" id="lt" ${S.lite?'checked':''}> Mode hemat: matikan video dan efek berat, cocok untuk HP lama</label>
+  <label class="tg"><input type="checkbox" id="lt" ${S.lite?'checked':''}> Mode hemat: matikan efek berat, cocok untuk HP lama (video Gojo tetap tampil)</label>
   <h3 class="sp">Diskusi dan narator</h3>
   <div class="rr"><span>Waktu diskusi (menit)</span><div class="step"><button data-m="-1" aria-label="Kurangi menit">−</button><output>${S.min}</output><button data-m="1" aria-label="Tambah menit">+</button></div></div>
   <label class="tg"><input type="checkbox" id="rv" ${S.reveal?'checked':''}> Tampilkan peran pemain yang gugur</label>
@@ -890,7 +889,7 @@ async function startGame(){
   const seen={};
   S.names=S.names.map((n,i)=>{n=n.trim()||'Pemain '+(i+1);seen[n]=(seen[n]||0)+1;return seen[n]>1?n+' '+seen[n]:n});
   try{localStorage.setItem('dk-setup',JSON.stringify(S))}catch(e){}
-  $('#scr').classList.remove('st');if(!S.lite&&!REDUCED())setTimeout(()=>gojoLoad().catch(()=>{}),1500);
+  $('#scr').classList.remove('st');if(!REDUCED())setTimeout(()=>gojoLoad().catch(()=>{}),1500);
   const roles=shuffle(ORDER.flatMap(k=>Array(S.cnt[k]).fill(k)));
   G={ps:S.names.map((n,i)=>({id:i,name:n,lang:S.langs[i],role:roles[i],alive:true})),day:0,lastDoc:{},heal:S.cnt.witch,poison:S.cnt.witch,lastLock:{},has:new Set(roles),pending:[],st:new Set(),log:[]};
   if(S.dual){let pr_=dealDual(roles);if(!pr_){pr_=[];for(let i=0;i<G.ps.length;i++)pr_.push([roles[2*i],roles[2*i+1]])}applyDual(pr_)}
@@ -1697,7 +1696,7 @@ function gojoFrame(v,ms){return new Promise(res=>{let d=false;const fin=()=>{if(
   if(!v.paused&&v.readyState>=3)go();else v.addEventListener('playing',go,{once:true})})}
 async function setBgGojo(on){
   if(!BGG)return;
-  on=!!on&&!S.lite&&!REDUCED();
+  on=!!on&&!REDUCED();
   if(on===gojoOn)return;
   gojoOn=on;const my=++gojoSeq,h=document.documentElement,o=$('#bg');
   try{
@@ -1798,7 +1797,7 @@ function showResume(sv){
   $('#nw').onclick=()=>{clearSave();setup()};
   $('#rs').onclick=async()=>{
     if(sv.mp&&typeof mpRestore==='function')mpRestore(sv.mp);G=sv.G;s.classList.remove('st');
-    if(!S.lite&&!REDUCED())setTimeout(()=>gojoLoad().catch(()=>{}),1500);
+    if(!REDUCED())setTimeout(()=>gojoLoad().catch(()=>{}),1500);
     board();
     if(sv.ph==='deal'){await dealRoles();loop()}else loop(sv.ph);
   };
